@@ -1,15 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { AuthService } from '../../services/auth.service';
-import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-
-
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-login',
@@ -17,56 +15,52 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatCardModule,
+    RouterLink,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatSnackBarModule
+    MatCardModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-  form;
+  loginForm: FormGroup;
+  errorMessage: string = '';
+
   constructor(
     private fb: FormBuilder,
-    private auth:AuthService,
-    private snackBar: MatSnackBar
-  ){
-    this.form = this.fb.group({
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]],
-    });
-    
-  }  
-
-  submit() {
-    if (this.form.invalid) {
-      console.error('Formulario inválido', this.form.value);
-
-      this.snackBar.open('Por favor complete correctamente el formulario.', 'Cerrar', {
-        duration: 3000,
-    });
-
-    return;
-  }
-
-  const { email, password } = this.form.value;
-  const ok = this.auth.login(email ?? '', password ?? '');
-
-  if (ok) {
-    console.log('Login OK (fake backend)', { email });
-
-    this.snackBar.open('Inicio de sesión exitoso ✅', 'Cerrar', {
-      duration: 2500,
-    });
-
-  } else {
-    console.error('Login FAIL (fake backend)');
-
-    this.snackBar.open('Credenciales incorrectas. Intente de nuevo.', 'Cerrar', {
-      duration: 3500,
+    private router: Router,
+    private authService: AuthService
+  ) {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
-}
+
+  onSubmit(): void {
+    this.errorMessage = '';
+
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
+
+    const loginData = this.loginForm.value;
+
+    this.authService.login(loginData).subscribe({
+      next: (response) => {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+
+        alert('Login exitoso');
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        console.error('Error al iniciar sesión:', error);
+        this.errorMessage = error?.error?.message || 'Error al iniciar sesión';
+      }
+    });
+  }
 }

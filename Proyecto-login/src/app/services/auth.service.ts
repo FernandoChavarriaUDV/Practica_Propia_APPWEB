@@ -1,23 +1,35 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+const API_URL = 'http://localhost:3000/api/auth';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthService {
-  // "Credenciales quemadas" (fake backend)
-  private readonly fakeUser = {
-    email: 'appweb@udv.edu.gt',
-    password: '152026',
-  };
 
-  login(email: string, password: string): boolean {
-    const ok =
-      email === this.fakeUser.email && password === this.fakeUser.password;
+  constructor(private http: HttpClient) {}
 
-    if (!ok) {
-      console.error('Credenciales incorrectas (fake backend)');
-    }
+  register(data: any): Observable<any> {
+    return this.http.post(`${API_URL}/register`, data);
+  }
 
-    return ok;
+  login(data: any): Observable<any> {
+    return this.http.post(`${API_URL}/login`, data);
+  }
+
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }
+
+  getCurrentUser(): any {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
   }
 }
