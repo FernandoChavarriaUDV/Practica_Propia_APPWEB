@@ -1,0 +1,43 @@
+<div class="login-wrapper">
+  <mat-card class="login-card">
+    <h2>Inicio de sesión</h2>
+
+    <p *ngIf="errorMessage" style="color: red; margin-bottom: 10px;">
+      {{ errorMessage }}
+    </p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Correo electrónico</mat-label>
+        <input matInput type="email" formControlName="email" placeholder="usuario@correo.com">
+        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+          El correo electrónico es obligatorio
+        </mat-error>
+        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+          Ingrese un correo electrónico válido
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Contraseña</mat-label>
+        <input matInput type="password" formControlName="password" placeholder="Ingrese su contraseña">
+        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+          La contraseña es obligatoria
+        </mat-error>
+        <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+          La contraseña debe tener al menos 6 caracteres
+        </mat-error>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" type="submit" class="full-width">
+        Ingresar
+      </button>
+
+      <p style="margin-top: 12px;">
+        ¿No tienes cuenta?
+        <a routerLink="/register">Regístrate</a>
+      </p>
+    </form>
+  </mat-card>
+</div>
